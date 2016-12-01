@@ -1,0 +1,56 @@
+class Problem7::Parser
+rule
+  expr
+  : expr OP NUM {
+    num1 = val[0]
+    num2 = val[2]
+    op =  case val[1]
+          when "RSHIFT" then ">>"
+          when "LSHIFT" then "<<"
+          when "OR" then "|"
+          when "AND" then "&"
+          end
+
+    result = "#{num1} #{op} #{num2}"
+  }
+  | expr OP VAR {
+    num1 = val[0]
+    num2 = val[2]
+    op =  case val[1]
+          when "RSHIFT" then "<<"
+          when "LSHIFT" then ">>"
+          when "OR" then "|"
+          when "AND" then "&"
+          end
+
+    result = "#{num1} #{op} _#{num2}"
+  }
+
+  expr: VAR { result =  "_#{val[0]}" }
+  expr: NUM { result =  "#{val[0]}" }
+
+  expr: expr "->" VAR {result = "_#{val[2]} = #{val[0]}"}
+
+  expr: OP VAR {
+    op =  case val[0]
+          when "NOT" then "~"
+          end
+    result = "#{op}_#{val[1]}"
+  }
+
+  expr: NUM { result =  "#{val[0]}" }
+
+
+end
+
+---- inner ----
+
+  def parse(tokens)
+    @tokens = tokens
+
+    do_parse
+  end
+
+  def next_token
+    @tokens.shift
+  end
