@@ -38,17 +38,52 @@ end
 
 
 {:ok, txt} = File.read("1.txt")
+
+txt = 
+  # txt
+  "R8, R4, R4, L4, L8, L12, L8, L8"
+  |> String.split(", ")
+  |> Enum.map(&Instructions.parse(&1))
+
 default_coords = [0, 0]
 default_direction = :N
 
-{[x, y], _} =
+
+# {[x, y], _} =
+#   txt
+#   |> Enum.reduce({default_coords, default_direction},
+#       fn({turn, spaces}, {coords, direction})->
+#         Instructions.move(coords, direction, turn, spaces)
+#       end
+#     )
+
+# IO.puts(abs(x) + abs(y))
+
+defmodule Grid do
+  def all_points([x1, y1], [x2, y2]) do
+    movement =
+      cond do
+        x1 == x2 -> Enum.into(Enum.intersperse(Enum.to_list(y1..y2), x1), [x1])
+        y1 == y2 -> Enum.into([y1], Enum.intersperse(Enum.to_list(x1..x2), y1))
+      end
+
+    movement |> Enum.chunk(2)
+  end
+end
+
+
+{[_, _], _, used_coords} =
   txt
-  |> String.split(", ")
-  |> Enum.map(&Instructions.parse(&1))
-  |> Enum.reduce({default_coords, default_direction},
-      fn({turn, spaces}, {coords, direction})->
-        Instructions.move(coords, direction, turn, spaces)
+  |> Enum.reduce({default_coords, default_direction, [default_coords]},
+      fn({turn, spaces}, {coords, direction, prev_coords})->
+        {[x, y], dir} = Instructions.move(coords, direction, turn, spaces)
+        all_points = tl(Grid.all_points(coords, [x, y]))
+        {[x, y], dir, Enum.into(all_points, prev_coords)}
       end
     )
 
-IO.puts(abs(x) + abs(y))
+IO.inspect(used_coords, limit: :infinity)
+
+Enum.with_index(used_coords)
+|> Enum.find(fn({char, i}) -> Enum.count(Enum.slice(used_coords, 0..i), fn(x)-> x == char end) > 1 end)
+|> IO.inspect
