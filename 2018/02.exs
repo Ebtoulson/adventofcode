@@ -32,12 +32,6 @@ defmodule Boxes do
 		twos * threes
 	end
 
-	# def checksum(id) do
-	# 	:md5
-	# 	|> :crypto.hash(id)
-	# 	|> Base.encode16()
-	# end
-
 	defp char_counts(id) do
 		id
 		|> String.codepoints()
